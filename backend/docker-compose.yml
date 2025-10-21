@@ -1,0 +1,149 @@
+services:
+  #  Database Server
+  # used by our Spring boot microservices
+  postgres:
+    container_name: ms_pg
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Ayoub2003
+      PGDATA: /var/lib/postgresql/data
+      volumes:
+        -postgres:/var/lib/postgresql/data
+      ports:
+        -5432:5432
+      restart: unless-stopped
+
+  # Database Client / GUI Tool
+  # used by the developper
+  pgadmin:
+    container_name: ms_pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  # NoSql Database Server
+  # used by our Spring boot microservices
+  mongodb:
+    image: mongo
+    container_name: md_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo:/data
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
+    networks:
+      - microservices-net
+
+
+
+  # Database Client / GUI Tool dashboard...
+  # used by the developper
+  mongo-express:
+    image: mongo-express
+    container_name: ms_mongo_express
+    depends_on:
+      - mongodb
+    ports:
+      - "8081:8081"
+    environment:
+      # EITHER use simple host:
+      # ME_CONFIG_MONGODB_SERVER: mongodb
+      # ME_CONFIG_MONGODB_ADMINUSERNAME: mongo
+      # ME_CONFIG_MONGODB_ADMINPASSWORD: mongo
+
+      # ✅ Recommended: single connection string
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:mongo@mongodb:27017/?authSource=admin
+    restart: always
+    networks:
+      - microservices-net
+
+  #Why we need Zipkin in a Spring Boot microservices architecture
+  #In a monolithic app, everything happens inside a single process — so you can easily trace what’s happening.
+  #But in a microservices system, one user request might go through many services:
+  #API Gateway → Order Service → Payment Service → Inventory Service → Notification Service
+  #If something becomes slow or fails, it’s hard to know where the problem is.
+  #That’s where Zipkin comes in.
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - microservices-net
+
+
+  #Kafka depended on Zookeeper to manage its brokers and metadata.
+  #  zookeeper:
+  #    image: confluentinc/cp-zookeeper:latest
+  #    container_name: zookeeper
+  #    environment:
+  #      ZOOKEEPER_SERVER_ID: 1
+  #      ZOOKEEPER_CLIENT_PORT: 2181
+  #      ZOOKEEPER_TICK_TIME: 2000
+  #    ports:
+  #      - "22181:2181"
+  #    networks:
+  #      - microservices-net
+
+  #high-performance message broker that lets your microservices communicate asynchronously by publishing and consuming events.
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: ms_kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # ---- KRaft essentials ----
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+
+      # Provide BOTH names for safety with the entrypoint
+      CLUSTER_ID: iaqoR7rpSECIWkIWpCfBVw          # 👈 the UUID you generated
+      KAFKA_CLUSTER_ID: iaqoR7rpSECIWkIWpCfBVw     # (kept too; harmless)
+
+      # Where Kafka will store its logs/metadata (must exist or be creatable)
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+
+      # Listeners (host + container + controller)
+      KAFKA_LISTENERS: PLAINTEXT://:29092,PLAINTEXT_HOST://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://ms_kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@ms_kafka:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      # single-node dev tweaks
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    networks:
+      - microservices-net
+
+
+  # MailDev to catch and preview those emails safely during development
+  mail-dev:
+    container_name: ms-mail-dev
+    image: maildev/maildev
+    ports:
+      - 1080:1080
+      - 1025:1025
+
+networks:
+  microservices-net:
+    driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
+  mongo:
