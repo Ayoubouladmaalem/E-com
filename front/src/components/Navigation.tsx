@@ -30,7 +30,7 @@ export function Navigation() {
           </a>
         </div>
         <Link
-          to="/products"
+          to="/register"
           className="px-6 py-2 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 text-white text-sm font-medium hover:shadow-lg hover:shadow-purple-500/50 transition"
         >
           Get Started
