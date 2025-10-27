@@ -1,0 +1,41 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      # ---- Build Angular ----
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installer dépendances Angular
+        working-directory: front
+        run: npm ci
+
+      - name: Build Angular
+        working-directory: front
+        run: npm run build
+
+      # ---- Build Spring Boot ----
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Build Spring Boot JAR
+        working-directory: backend
+        run: mvn clean package -DskipTests
+
+
