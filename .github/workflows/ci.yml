@@ -19,11 +19,11 @@ jobs:
         with:
           node-version: 20
 
-      - name: Installer dépendances Angular
+      - name: Installer dépendances React
         working-directory: front
         run: npm ci
 
-      - name: Build Angular
+      - name: Build React
         working-directory: front
         run: npm run build
 
