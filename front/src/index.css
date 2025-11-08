@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Dark mode theme for Cartiva with vibrant purple, cyan, and electric blue */
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #a78bfa;
+  --primary-foreground: #0f172a;
+  --secondary: #06b6d4;
+  --secondary-foreground: #0f172a;
+  --muted: #334155;
+  --muted-foreground: #cbd5e1;
+  --accent: #3b82f6;
+  --accent-foreground: #0f172a;
+  --border: #334155;
+  --input: #1e293b;
+  --ring: #8b5cf6;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.glass-hover {
+  transition: all 0.3s ease;
+}
+
+.glass-hover:hover {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(148, 163, 184, 0.4);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
+}
