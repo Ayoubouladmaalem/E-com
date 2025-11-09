@@ -8,11 +8,13 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Ayoub2003
       PGDATA: /var/lib/postgresql/data
-      volumes:
-        -postgres:/var/lib/postgresql/data
-      ports:
-        -5432:5432
-      restart: unless-stopped
+    volumes: # ✅ Correct indentation
+      - postgres:/var/lib/postgresql/data
+    ports: # ✅ Correct indentation
+      - "5432:5432"
+    networks:
+      - microservices-net
+    restart: unless-stopped
 
   # Database Client / GUI Tool
   # used by the developper
